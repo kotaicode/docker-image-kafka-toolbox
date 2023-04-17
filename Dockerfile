@@ -5,6 +5,7 @@ ENV KAFKA_URL=https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/kafka_2.12-
 ENV KAFKA_TMP_DEST=/opt/kafka.tgz
 ENV KAFKA_WORKDIR=/opt/kafka
 
+# hadolint ignore=DL3008
 RUN apt-get update && apt-get upgrade -y && \
   apt-get install -y --no-install-recommends \
   software-properties-common \
@@ -22,17 +23,16 @@ RUN apt-get update && apt-get upgrade -y && \
   rm -rf /var/lib/apt/lists/* && \
   update-ca-certificates -f;
 
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+RUN wget -nv "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -O "awscliv2.zip" && \
   unzip awscliv2.zip && \
   ./aws/install
 
-RUN wget $KAFKA_URL -O ${KAFKA_TMP_DEST} && \
+RUN wget -nv $KAFKA_URL -O ${KAFKA_TMP_DEST} && \
     mkdir -p ${KAFKA_WORKDIR} && \
     tar -xvzpf ${KAFKA_TMP_DEST} --strip-components=1 -C ${KAFKA_WORKDIR}
-RUN wget https://github.com/aws/aws-msk-iam-auth/releases/download/v1.1.1/aws-msk-iam-auth-1.1.1-all.jar -P ${KAFKA_WORKDIR}/libs
+RUN wget -nv https://github.com/aws/aws-msk-iam-auth/releases/download/v1.1.1/aws-msk-iam-auth-1.1.1-all.jar -P ${KAFKA_WORKDIR}/libs
 
 COPY client.properties ${KAFKA_WORKDIR}/bin
 
 WORKDIR /opt/kafka
 
-CMD "bash"
